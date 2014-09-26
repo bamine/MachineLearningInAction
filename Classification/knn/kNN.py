@@ -25,12 +25,21 @@ def file2matrix(filename):
     return returnMat, classLabelVector
 
 
+def autoNorm(dataSet):
+    minVals = dataSet.min(axis=0)
+    maxVals = dataSet.max(axis=0)
+    ranges = maxVals - minVals
+    normDataSet = np.zeros(dataSet.shape)
+    m = dataSet.shape[0]
+    normDataSet = (dataSet - np.tile(minVals, (m, 1))) / np.tile(ranges, (m, 1))
+    return normDataSet, ranges, minVals
+
+
 def visualizeDatingData(datingDataMat):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.scatter(datingDataMat[:, 1], datingDataMat[:, 2], 15.0 * np.array(datingLabels), 15.0 * np.array(datingLabels))
     plt.show()
-
 
 def classifiy0(X, dataSet, labels, k):
     dataSetSize = dataSet.shape[0]
