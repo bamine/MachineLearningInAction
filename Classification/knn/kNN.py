@@ -56,6 +56,20 @@ def classifiy0(X, dataSet, labels, k):
     return sortedClassCount[0][0]
 
 
+def datingClassTest():
+    ratio = 0.1
+    datingDataMat, datingLabels = file2matrix("datingTestSet.txt")
+    normMat, ranges, minVals = autoNorm(datingDataMat)
+    m = normMat.shape[0]
+    numTestVecs = int(m * ratio)
+    errorCount = 0.0
+    for i in xrange(numTestVecs):
+        classifierResult = classifiy0(normMat[i, :], normMat[numTestVecs:m, :], datingLabels[numTestVecs:m], 2)
+        print "The classifier answer : %d - The real answer : %d" % (classifierResult, datingLabels[i])
+        if classifierResult != datingLabels[i]:
+            errorCount += 1.0
+    print "The total error rate for the classifier is : %f" % (errorCount / numTestVecs)
+
+
 if __name__ == "__main__":
-    datingDataMat, datingLabels = file2matrix('datingTestSet.txt')
-    visualizeDatingData(datingDataMat)
+    datingClassTest()
