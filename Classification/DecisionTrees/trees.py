@@ -14,3 +14,14 @@ def shannonEntropy(dataSet):
         prob = float(labelCounts[key]) / numEntries
         entropy -= prob * log2(prob)
     return entropy
+
+
+def createDummyDataSet():
+    dataSet = [[1, 1, 'yes'],
+               [1, 1, 'yes'],
+               [1, 0, 'no'],
+               [0, 1, 'no'],
+               [0, 1, 'no']]
+    columns = ['no surfacing', 'flippers']
+    return dataSet, columns
+
