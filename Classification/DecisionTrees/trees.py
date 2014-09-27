@@ -1,5 +1,5 @@
 from scipy import log2
-
+import operator
 
 def shannonEntropy(dataSet):
     numEntries = len(dataSet)
@@ -35,6 +35,15 @@ def splitDataSet(dataSet, axis, value):
     return retDataSet
 
 
+def majorityVote(classList):
+    classCount = {}
+    for vote in classList:
+        if vote not in classCount.keys():
+            classCount[vote] = 0
+        classCount[vote] += 1
+    sortedClassCount = sorted(classCount.iteritems(), key=operator.itemgetter(1), reverse=True)
+    return sortedClassCount[0][0]
+
 def chooseBestFeatureToSplit(dataSet):
     numFeatures = len(dataSet[0]) - 1
     numPoints = float(len(dataSet))
@@ -54,6 +63,29 @@ def chooseBestFeatureToSplit(dataSet):
             bestInfoGain = infoGain
             bestFeature = i
     return bestFeature
+
+
+def createTree(dataSet, labels):
+    classList = [example[-1] for example in dataSet]
+    if classList.count(classList[0]) == len(classList):
+        return classList[0]
+    if len(dataSet[0]) == 1:
+        return majorityVote(classList)
+    bestFeature = chooseBestFeatureToSplit(dataSet)
+    bestFeatureLabel = labels[bestFeature]
+    myTree = {bestFeatureLabel: {}}
+    del (labels[bestFeature])
+    featureValues = [example[bestFeature] for example in dataSet]
+    uniqueVals = set(featureValues)
+    for value in uniqueVals:
+        subLabels = labels[:]
+        myTree[bestFeatureLabel][value] = createTree(splitDataSet(dataSet, bestFeature, value), subLabels)
+    return myTree
+
+
+if __name__ == "__main__":
+    dataSet, columns = createDummyDataSet()
+    print createTree(dataSet, columns)
 
 
 
