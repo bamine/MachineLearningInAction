@@ -15,7 +15,6 @@ def shannonEntropy(dataSet):
         entropy -= prob * log2(prob)
     return entropy
 
-
 def createDummyDataSet():
     dataSet = [[1, 1, 'yes'],
                [1, 1, 'yes'],
@@ -24,4 +23,37 @@ def createDummyDataSet():
                [0, 1, 'no']]
     columns = ['no surfacing', 'flippers']
     return dataSet, columns
+
+
+def splitDataSet(dataSet, axis, value):
+    retDataSet = []
+    for featVec in dataSet:
+        if featVec[axis] == value:
+            reducedFeatVec = featVec[:axis]
+            reducedFeatVec.extend(featVec[axis + 1:])
+            retDataSet.append(reducedFeatVec)
+    return retDataSet
+
+
+def chooseBestFeatureToSplit(dataSet):
+    numFeatures = len(dataSet[0]) - 1
+    numPoints = float(len(dataSet))
+    baseEntropy = shannonEntropy(dataSet)
+    bestInfoGain = 0.0
+    bestFeature = -1
+    for i in xrange(numFeatures):
+        featList = [example[i] for example in dataSet]
+        uniqueVals = set(featList)
+        newEntropy = 0.0
+        for value in uniqueVals:
+            subDataSet = splitDataSet(dataSet, i, value)
+            prob = len(subDataSet) / numPoints
+            newEntropy += prob * shannonEntropy(subDataSet)
+        infoGain = baseEntropy - newEntropy
+        if infoGain > bestInfoGain:
+            bestInfoGain = infoGain
+            bestFeature = i
+    return bestFeature
+
+
 
