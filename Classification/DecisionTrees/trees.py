@@ -96,6 +96,22 @@ def classifiy(testVec, inputTree, featLabels):
                 classLabel = secondDict[key]
     return classLabel
 
+
+def storeTree(inTree, filename):
+    import pickle
+
+    fw = open(filename, 'w')
+    pickle.dump(inTree, fw)
+    fw.close()
+
+
+def grabTree(filename):
+    import pickle
+
+    fr = open(filename)
+    return pickle.load(fr)
+
+
 if __name__ == "__main__":
     dataSet, columns = createDummyDataSet()
     myTree = retrieveTree(0)
