@@ -1,4 +1,5 @@
 from scipy import log2
+from treePlotter import *
 import operator
 
 def shannonEntropy(dataSet):
@@ -83,9 +84,22 @@ def createTree(dataSet, labels):
     return myTree
 
 
+def classifiy(testVec, inputTree, featLabels):
+    firstString = inputTree.keys()[0]
+    secondDict = inputTree[firstString]
+    featIndex = featLabels.index(firstString)
+    for key in secondDict.keys():
+        if testVec[featIndex] == key:
+            if type(secondDict[key]).__name__ == 'dict':
+                classLabel = classifiy(testVec, secondDict[key], featLabels)
+            else:
+                classLabel = secondDict[key]
+    return classLabel
+
 if __name__ == "__main__":
     dataSet, columns = createDummyDataSet()
-    print createTree(dataSet, columns)
+    myTree = retrieveTree(0)
+    print classifiy([1, 0], myTree, columns)
 
 
 
