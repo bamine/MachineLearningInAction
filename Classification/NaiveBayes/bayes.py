@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def loadDataSet():
     postingList = [['my', 'dog', 'has', 'flea', \
                     'problems', 'help', 'please'],
@@ -30,7 +33,63 @@ def setOfWords2Vec(vocabList, inputSet):
     return returnVec
 
 
+def trainNaiveBayes0(trainMatrix, trainCategory):
+    numTrainDocs = len(trainMatrix)
+    numWords = len(trainMatrix[0])
+    pAbusive = sum(trainCategory) / float(numTrainDocs)
+    p0Num = np.zeros(numWords)
+    p1Num = np.zeros(numWords)
+    p0Denom = 0.0
+    p1Denom = 0.0
+    for i in xrange(numTrainDocs):
+        if trainCategory[i] == 1:
+            p1Num += trainMatrix[i]
+            p1Denom += sum(trainMatrix[i])
+        else:
+            p0Num += trainMatrix[i]
+            p0Denom += sum(trainMatrix[i])
+    p1Vect = p1Num / p1Denom
+    p0Vect = p0Num / p0Denom
+    return p0Vect, p1Vect, pAbusive
+
+
+def createTrainMat(dataSet, vocabSet):
+    trainMat = []
+    for post in dataSet:
+        trainMat.append(setOfWords2Vec(vocabSet, post))
+    return trainMat
+
+
 if __name__ == "__main__":
     dataSet, classVec = loadDataSet()
     vocabSet = createVocabList(dataSet)
-    print setOfWords2Vec(vocabSet, dataSet[0])
+    trainMat = createTrainMat(dataSet, vocabSet)
+    p0V, p1V, pAb = trainNaiveBayes0(trainMat, classVec)
+    print pAb
+    print p0V
+    print p1V
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
