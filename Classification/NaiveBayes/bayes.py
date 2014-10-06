@@ -1,3 +1,4 @@
+from scipy import log
 import numpy as np
 
 
@@ -29,7 +30,7 @@ def setOfWords2Vec(vocabList, inputSet):
         if word in vocabList:
             returnVec[vocabList.index(word)] = 1
         else:
-            print "The word % is not in my Vocabulary" % word
+            print "The word %s is not in my Vocabulary" % word
     return returnVec
 
 
@@ -37,10 +38,10 @@ def trainNaiveBayes0(trainMatrix, trainCategory):
     numTrainDocs = len(trainMatrix)
     numWords = len(trainMatrix[0])
     pAbusive = sum(trainCategory) / float(numTrainDocs)
-    p0Num = np.zeros(numWords)
-    p1Num = np.zeros(numWords)
-    p0Denom = 0.0
-    p1Denom = 0.0
+    p0Num = np.ones(numWords)
+    p1Num = np.ones(numWords)
+    p0Denom = 2.0
+    p1Denom = 2.0
     for i in xrange(numTrainDocs):
         if trainCategory[i] == 1:
             p1Num += trainMatrix[i]
@@ -48,8 +49,8 @@ def trainNaiveBayes0(trainMatrix, trainCategory):
         else:
             p0Num += trainMatrix[i]
             p0Denom += sum(trainMatrix[i])
-    p1Vect = p1Num / p1Denom
-    p0Vect = p0Num / p0Denom
+    p1Vect = log(p1Num / p1Denom)
+    p0Vect = log(p0Num / p0Denom)
     return p0Vect, p1Vect, pAbusive
 
 
@@ -60,14 +61,31 @@ def createTrainMat(dataSet, vocabSet):
     return trainMat
 
 
+def classifiyNB(vec, p0vec, p1vec, pClass1):
+    p1 = sum(vec * p1vec) + log(pClass1)
+    p0 = sum(vec * p0vec) + log(1.0 - pClass1)
+    if p1 > p0:
+        return 1
+    else:
+        return 0
+
+
+def testingNB():
+    posts, classes = loadDataSet()
+    myVocabList = createVocabList(posts)
+    trainMat = createTrainMat(posts, myVocabList)
+    p0v, p1v, pAb = trainNaiveBayes0(np.array(trainMat), np.array(classes))
+    testEntry = ['love', 'my', 'dalmatian']
+    doc = np.array(setOfWords2Vec(myVocabList, testEntry))
+    print testEntry, ' classified as :', classifiyNB(doc, p0v, p1v, pAb)
+
+    testEntry = ['stupid', 'garbage']
+    doc = np.array(setOfWords2Vec(myVocabList, testEntry))
+    print testEntry, ' classified as :', classifiyNB(doc, p0v, p1v, pAb)
+
+
 if __name__ == "__main__":
-    dataSet, classVec = loadDataSet()
-    vocabSet = createVocabList(dataSet)
-    trainMat = createTrainMat(dataSet, vocabSet)
-    p0V, p1V, pAb = trainNaiveBayes0(trainMat, classVec)
-    print pAb
-    print p0V
-    print p1V
+    testingNB()
 
 
 
