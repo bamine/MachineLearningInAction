@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import random
 
 def loadDataSet():
     dataMat = []
@@ -28,6 +28,37 @@ def gradientAscent(dataMat, labels):
         h = sigmoid(dataMatrix * weights)
         error = labelMatrix - h
         weights += alpha * dataMatrix.transpose() * error
+    return weights
+
+
+def StochasticGradientAscent(dataMat, labels, iter=150):
+    dataMatrix = np.array(dataMat)
+    labelMatrix = np.array(labels)
+    m, n = np.shape(dataMatrix)
+    alpha = 0.01
+    weights = np.ones(n)
+    for k in xrange(iter):
+        for i in xrange(m):
+            h = sigmoid(sum(dataMatrix[i] * weights))
+            error = labelMatrix[i] - h
+            weights += alpha * dataMatrix[i] * error
+    return weights
+
+
+def StochasticGradientAscent2(dataMat, labels, iter=150):
+    dataMatrix = np.array(dataMat)
+    labelMatrix = np.array(labels)
+    m, n = np.shape(dataMatrix)
+    weights = np.ones(n)
+    for k in xrange(iter):
+        dataIndex = range(m)
+        for i in xrange(m):
+            alpha = 4 / (1.0 + k + i) + 0.01
+            randIndex = int(random.uniform(0, len(dataIndex)))
+            h = sigmoid(sum(dataMatrix[i] * weights))
+            error = labelMatrix[i] - h
+            weights += alpha * dataMatrix[i] * error
+            del (dataIndex[randIndex])
     return weights
 
 
@@ -60,7 +91,7 @@ def plotBestFit(weights):
 
 if __name__ == "__main__":
     data, labels = loadDataSet()
-    w = gradientAscent(data, labels)
+    w = StochasticGradientAscent2(data, labels, 10)
     plotBestFit(w)
 
 
