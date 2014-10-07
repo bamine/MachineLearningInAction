@@ -34,6 +34,16 @@ def setOfWords2Vec(vocabList, inputSet):
     return returnVec
 
 
+def bagOfWords2Vec(vocabList, inputSet):
+    returnVec = [0] * len(vocabList)
+    for word in inputSet:
+        if word in vocabList:
+            returnVec[vocabList.index(word)] += 1
+        else:
+            print "The word %s is not in my Vocabulary" % word
+    return returnVec
+
+
 def trainNaiveBayes0(trainMatrix, trainCategory):
     numTrainDocs = len(trainMatrix)
     numWords = len(trainMatrix[0])
