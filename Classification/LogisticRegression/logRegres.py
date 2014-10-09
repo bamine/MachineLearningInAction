@@ -89,10 +89,44 @@ def plotBestFit(weights):
     plt.show()
 
 
+def classify(x, weights):
+    prob = sigmoid(sum(x * weights))
+    if prob < 0.5:
+        return 0.0
+    else:
+        return 1.0
+
+
+def colicTest():
+    train = open('horseColicTraining.txt')
+    test = open('horseColicTest.txt')
+    trainingSet = []
+    trainingLabels = []
+    for line in train.readlines():
+        l = line.strip().split('\t')
+        array = []
+        for i in xrange(21):
+            array.append(float(l[i]))
+        trainingSet.append(array)
+        trainingLabels.append(float(l[21]))
+    trainWeights = StochasticGradientAscent2(np.array(trainingSet), trainingLabels, 5000)
+    errorCount = 0
+    numTestVec = 0.0
+    for line in test.readlines():
+        numTestVec += 1.0
+        l = line.strip().split('\t')
+        array = []
+        for i in xrange(21):
+            array.append(float(l[i]))
+        if int(classify(np.array(array), trainWeights)) != int(l[21]):
+            errorCount += 1
+        errorRate = float(errorCount) / numTestVec
+    print "The error rate of the classifier is %f" % errorRate
+    return errorRate
+
+
 if __name__ == "__main__":
-    data, labels = loadDataSet()
-    w = StochasticGradientAscent2(data, labels, 10)
-    plotBestFit(w)
+    x = colicTest()
 
 
 
