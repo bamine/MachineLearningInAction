@@ -4,7 +4,7 @@ from smoSimple import *
 
 
 class optStruct(object):
-    def __init__(self, dataMat, labels, C, toler):
+    def __init__(self, dataMat, labels, C, toler, kTup=['lin']):
         self.X = dataMat
         self.labels = labels
         self.C = C
@@ -13,10 +13,13 @@ class optStruct(object):
         self.alphas = np.mat(np.zeros((self.m, 1)))
         self.b = 0
         self.eCache = np.mat(np.zeros((self.m, 2)))
+        self.K = np.mat(np.zeros((self.m, self.m)))
+        for i in xrange(self.m):
+            self.K[:, i] = kernelTransform(self.X, self.X[i, :], kTup)
 
 
 def calcEk(oS, k):
-    fXk = float(np.multiply(oS.alphas, oS.labels).T * (oS.X * oS.X[k, :].T)) + oS.b
+    fXk = float(np.multiply(oS.alphas, oS.labels).T * oS.K[:, k]) + oS.b
     Ek = fXk - float(oS.labels[k])
     return Ek
 
@@ -64,7 +67,7 @@ def innerL(i, oS):
         if L == H:
             print "L==H"
             return 0
-        eta = 2.0 * oS.X[i, :] * oS.X[j, :].T - oS.X[i, :] * oS.X[i, :].T - oS.X[j, :] * oS.X[j, :].T
+        eta = 2.0 * oS.K[i, j] - oS.K[i, i] - oS.K[j, j]
         if eta >= 0:
             print "eta >= 0"
             return 0
@@ -76,10 +79,10 @@ def innerL(i, oS):
             return 0
         oS.alphas[i] += oS.labels[j] * oS.labels[i] * (alphaJold - oS.alphas[j])
         updateEk(oS, i)
-        b1 = oS.b - Ei - oS.labels[i] * (oS.alphas[i] - alphaIold) * oS.X[i, :] * oS.X[i, :].T - \
-             oS.labels[j] * (oS.alphas[j] - alphaJold) * oS.X[i, :] * oS.X[j, :].T
-        b2 = oS.b - Ej - oS.labels[i] * (oS.alphas[i] - alphaIold) * oS.X[i, :] * oS.X[j, :].T - \
-             oS.labels[j] * (oS.alphas[j] - alphaJold) * oS.X[j, :] * oS.X[j, :].T
+        b1 = oS.b - Ei - oS.labels[i] * (oS.alphas[i] - alphaIold) * oS.K[i, i] - \
+             oS.labels[j] * (oS.alphas[j] - alphaJold) * oS.K[i, j]
+        b2 = oS.b - Ej - oS.labels[i] * (oS.alphas[i] - alphaIold) * oS.K[i, j] - \
+             oS.labels[j] * (oS.alphas[j] - alphaJold) * oS.K[j, j]
         if oS.alphas[i] > 0 and oS.alphas[i] < oS.C:
             oS.b = b1
         elif oS.alphas[j] > 0 and oS.alphas[j] < oS.C:
@@ -125,6 +128,21 @@ def calculateWs(alphas, data, labels):
     for i in xrange(m):
         w += np.multiply(alphas[i] * labelMat[i], X[i, :].T)
     return w
+
+
+def kernelTransform(X, A, kTup):
+    m, n = np.shape(X)
+    K = np.mat(np.zeros((m, 1)))
+    if kTup[0] == 'lin':
+        K = X * A.T
+    elif kTup[0] == 'rbf':
+        for j in xrange(m):
+            deltaRow = X[j, :] - A
+            K[j] = deltaRow * deltaRow.T
+        K = np.exp(K / (-1 * kTup[1] ** 2))
+    else:
+        raise NameError('Houston we have a problem ... The kernel is not recognized')
+    return K
 
 
 if __name__ == "__main__":
