@@ -19,7 +19,7 @@ class optStruct(object):
 
 
 def calcEk(oS, k):
-    fXk = float(np.multiply(oS.alphas, oS.labels).T * oS.K[:, k]) + oS.b
+    fXk = float(np.multiply(oS.alphas, oS.labels).T * oS.K[:, k] + oS.b)
     Ek = fXk - float(oS.labels[k])
     return Ek
 
@@ -145,12 +145,38 @@ def kernelTransform(X, A, kTup):
     return K
 
 
+def testRBF(k1=1.3):
+    data, labels = loadDataSet('testSetRBF.txt')
+    b, alphas = smo(data, labels, 500, 0.0001, 10000, ('rbf', k1))
+    dataMat = np.mat(data)
+    labelMat = np.mat(labels).transpose()
+    svInd = np.nonzero(alphas.A > 0)[0]
+    sVs = dataMat[svInd]
+    labelSV = labelMat[svInd]
+    print "there are %d Support Vectors" % np.shape(sVs)[0]
+    m, n = np.shape(dataMat)
+    errorCount = 0
+    for i in xrange(m):
+        kernelEval = kernelTransform(sVs, dataMat[i, :], ('rbf', k1))
+        predict = kernelEval.T * np.multiply(labelSV, alphas[svInd]) + b
+        if np.sign(predict) != np.sign(labels[i]):
+            errorCount += 1
+    print "The training error rate is: %f" % (float(errorCount) / m)
+    data, labels = loadDataSet('testSetRBF2.txt')
+    dataMat = np.mat(data)
+    labelMat = np.mat(labels).transpose()
+    m, n = np.shape(dataMat)
+    errorCount = 0
+    for i in xrange(m):
+        kernelEval = kernelTransform(sVs, dataMat[i, :], ('rbf', k1))
+        predict = kernelEval.T * np.multiply(labelSV, alphas[svInd]) + b
+        if np.sign(predict) != np.sign(labels[i]):
+            errorCount += 1
+    print "The test error rate is: %f" % (float(errorCount) / m)
+
+
 if __name__ == "__main__":
-    dataMat, labelMat = loadDataSet("testSet.txt")
-    b, alphas = smo(dataMat, labelMat, 0.6, 0.001, 40)
-    ws = calculateWs(alphas, dataMat, labelMat)
-    data = np.mat(dataMat)
-    print data[0] * np.mat(ws) + b
+    testRBF(k1=1.3)
 
 
 
