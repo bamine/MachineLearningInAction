@@ -35,8 +35,8 @@ def buildStump(dataArray, classLabels, D):
                 errorArray = np.mat(np.ones((m, 1)))
                 errorArray[predictedValues == labelMatrix] = 0
                 weightedError = D.T * errorArray
-                print "split: dim %d - thresh: %.2f - thresh inequality: %s - the weighted error is %.3f" \
-                      % (i, threshVal, inequality, weightedError)
+                # print "split: dim %d - thresh: %.2f - thresh inequality: %s - the weighted error is %.3f" \
+                #      % (i, threshVal, inequality, weightedError)
                 if weightedError < minError:
                     minError = weightedError
                     bestClassEstimator = predictedValues.copy()
@@ -46,8 +46,46 @@ def buildStump(dataArray, classLabels, D):
     return bestStump, minError, bestClassEstimator
 
 
+def adaBoostTrain(dataSet, classLabels, numIt=40):
+    weakClassArray = []
+    m = np.shape(dataSet)[0]
+    D = np.mat(np.ones((m, 1)) / m)
+    aggClassEst = np.mat(np.zeros((m, 1)))
+    for i in xrange(numIt):
+        bestStump, error, classEst = buildStump(dataSet, classLabels, D)
+        # print "D :",D.T
+        alpha = float(0.5 * np.log((1.0 - error) / max(error, 1e-16)))
+        bestStump['alpha'] = alpha
+        weakClassArray.append(bestStump)
+        #print "classEst : ",classEst.T
+        expon = np.multiply(-1 * alpha * np.mat(classLabels).T, classEst)
+        D = np.multiply(D, np.exp(expon))
+        D = D / D.sum()
+        aggClassEst += alpha * classEst
+        #print "aggClassEst :",aggClassEst.T
+        aggErrors = np.multiply(np.sign(aggClassEst) != np.mat(classLabels).T, np.ones((m, 1)))
+        errorRate = aggErrors.sum() / m
+        print "Total errors :", errorRate, "\n"
+        if errorRate == 0.0:
+            break
+    return weakClassArray
+
+
+def adaClassify(data, classifierArray):
+    dataMatrix = np.mat(data)
+    m = np.shape(dataMatrix)[0]
+    aggClassEst = np.mat(np.zeros((m, 1)))
+    for classifier in classifierArray:
+        classEst = stumpClassify(dataMatrix, classifier['dim'], classifier['threshold'], classifier['ineq'])
+        aggClassEst += classifier['alpha'] * classEst
+        # print aggClassEst
+    return np.sign(aggClassEst)
+
+
 if __name__ == "__main__":
     dataMat, classLabels = loadSimpleData()
     D = np.mat(np.ones((5, 1)) / 5)
-    buildStump(dataMat, classLabels, D)
+    classifierArray = adaBoostTrain(dataMat, classLabels)
+    print classifierArray
+    print adaClassify([0, 0], classifierArray)
 
