@@ -68,7 +68,7 @@ def adaBoostTrain(dataSet, classLabels, numIt=40):
         print "Total errors :", errorRate, "\n"
         if errorRate == 0.0:
             break
-    return weakClassArray
+    return weakClassArray, aggClassEst
 
 
 def adaClassify(data, classifierArray):
@@ -85,7 +85,7 @@ def adaClassify(data, classifierArray):
 if __name__ == "__main__":
     dataMat, classLabels = loadSimpleData()
     D = np.mat(np.ones((5, 1)) / 5)
-    classifierArray = adaBoostTrain(dataMat, classLabels)
+    classifierArray, _ = adaBoostTrain(dataMat, classLabels)
     print classifierArray
     print adaClassify([0, 0], classifierArray)
 
