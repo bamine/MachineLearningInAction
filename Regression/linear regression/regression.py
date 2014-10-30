@@ -52,17 +52,50 @@ def lwlrTest(testArray, x, y, k=1.0):
     return yHat
 
 
-if __name__ == "__main__":
-    x, y = loadDataSet('ex0.txt')
-    print locallyWeightedLinearRegression(x[0], x, y, 1.0)
-    print locallyWeightedLinearRegression(x[0], x, y, 0.01)
-    yHat = lwlrTest(x, x, y, 0.01)
+def ridgeRegression(x, y, lam=0.2):
+    xTx = x.T * x
+    denom = xTx + np.eye(np.shape(x)[1]) * lam
+    if np.linalg.det(denom) == 0.0:
+        print "This matrix is singular, cannot compute inverse"
+        return
+    ws = denom.I * (x.T * y)
+    return ws
+
+
+def ridgeTest(x, y):
     xMat = np.mat(x)
-    srtInd = xMat[:, 1].argsort(0)
-    xSort = xMat[srtInd][:, 0, :]
+    yMat = np.mat(y).T
+    yMean = np.mean(yMat, 0)
+    yMat = yMat - yMean
+    xMeans = np.mean(xMat, 0)
+    xVar = np.var(xMat, 0)
+    xMat = (xMat - xMeans) / xVar
+    numTestPts = 30
+    wMat = np.zeros((numTestPts, np.shape(xMat)[1]))
+    for i in xrange(numTestPts):
+        ws = ridgeRegression(xMat, yMat, np.exp(i - 10))
+        wMat[i, :] = ws.T
+    return wMat
+
+
+if __name__ == "__main__":
+    # x, y = loadDataSet('ex0.txt')
+    # print locallyWeightedLinearRegression(x[0], x, y, 1.0)
+    # print locallyWeightedLinearRegression(x[0], x, y, 0.01)
+    # yHat = lwlrTest(x, x, y, 0.01)
+    # xMat = np.mat(x)
+    # srtInd = xMat[:, 1].argsort(0)
+    # xSort = xMat[srtInd][:, 0, :]
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.plot(xSort[:, 1].flatten().A[0], np.mat(yHat[srtInd]).T.flatten().A[0])
+    # ax.scatter(xMat[:, 1].flatten().A[0], np.mat(y).T.flatten().A[0], s=2, c='red')
+    # plt.show()
+
+    X, Y = loadDataSet('abalone.txt')
+    ridgeWeights = ridgeTest(X, Y)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(xSort[:, 1].flatten().A[0], np.mat(yHat[srtInd]).T.flatten().A[0])
-    ax.scatter(xMat[:, 1].flatten().A[0], np.mat(y).T.flatten().A[0], s=2, c='red')
+    ax.plot(ridgeWeights)
     plt.show()
 
