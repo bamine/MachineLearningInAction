@@ -29,7 +29,7 @@ def regErr(dataSet):
 def chooseBestSplit(dataSet, leafType=regLeaf, errType=regErr, ops=(1, 4)):
     tolS = ops[0]
     tolN = ops[1]
-    if len(set(dataSet[:, -1].T.tolist())[0]) == 1:
+    if len(set(dataSet[:, -1].T.tolist()[0])) == 1:
         return None, leafType(dataSet)
     m, n = np.shape(dataSet)
     S = errType(dataSet)
@@ -65,6 +65,12 @@ def createTree(dataSet, leafType=regLeaf, errType=regErr, ops=(1, 4)):
     regTree.left = createTree(lSet, leafType, errType, ops)
     regTree.right = createTree(rSet, leafType, errType, ops)
     return regTree
+
+
+if __name__ == "__main__":
+    data = loadDataMat('ex00.txt')
+    mat = np.mat(data)
+    print createTree(mat)
 
 
 
