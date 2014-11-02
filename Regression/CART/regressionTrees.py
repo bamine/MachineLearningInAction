@@ -67,10 +67,48 @@ def createTree(dataSet, leafType=regLeaf, errType=regErr, ops=(1, 4)):
     return regTree
 
 
+def isTree(obj):
+    return type(obj).__name__ == 'treeNode'
+
+
+def getMean(tree):
+    if isTree(tree.right):
+        tree.right = getMean(tree.right)
+    if isTree(tree.left):
+        tree.left = getMean(tree.left)
+    return (tree.left + tree.right) / 2.0
+
+
+def prune(tree, testData):
+    if np.shape(testData)[0] == 0:
+        return getMean(tree)
+    if isTree(tree.right) or isTree(tree.left):
+        lSet, rSet = binSplitData(testData, tree.feature, tree.value)
+        if isTree(tree.left):
+            tree.left = prune(tree.left, lSet)
+        if isTree(tree.right):
+            tree.right = prune(tree.right, rSet)
+    if not isTree(tree.left) and not isTree(tree.right):
+        lSet, rSet = binSplitData(testData, tree.feature, tree.value)
+        errorNoMerge = np.sum(np.square(lSet[:, -1] - tree.left)) + np.sum(np.square(rSet[:, -1] - tree.right))
+        treeMean = (tree.left + tree.right) / 2.0
+        errorMerge = np.sum(np.square(testData[:, -1] - treeMean))
+        if errorMerge < errorNoMerge:
+            print "merging"
+            return treeMean
+        else:
+            return tree
+    else:
+        return tree
+
+
 if __name__ == "__main__":
-    data = loadDataMat('ex00.txt')
-    mat = np.mat(data)
-    print createTree(mat)
+    data = loadDataMat('ex2.txt')
+    mat2 = np.mat(data)
+    myTree = createTree(mat2, ops=(0, 1))
+    test = loadDataMat('ex2test.txt')
+    mat2test = np.mat(test)
+    print prune(myTree, mat2test)
 
 
 
